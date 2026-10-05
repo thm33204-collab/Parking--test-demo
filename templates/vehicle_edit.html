@@ -1,0 +1,52 @@
+{% extends "base.html" %}
+
+{% block title %}Cập nhật phương tiện - Smart Parking{% endblock %}
+
+{% block extra_css %}
+.form-container {
+    max-width: 500px;
+    margin: 0 auto;
+}
+{% endblock %}
+
+{% block content %}
+<div class="form-container">
+    <div class="card">
+        <div class="card-header">
+            <h1 class="card-title"><i class="fa-solid fa-edit" style="margin-right: 8px; color: var(--primary-color);"></i> Cập nhật phương tiện</h1>
+        </div>
+        
+        <form method="POST" action="{{ url_for('vehicle_edit', id=vehicle.id) }}">
+            <div class="form-group">
+                <label for="plate_number" class="form-label">Biển số xe</label>
+                <input type="text" id="plate_number" name="plate_number" class="form-control" value="{{ vehicle.plate_number }}" required>
+            </div>
+            
+            <div class="form-group">
+                <label for="vehicle_type" class="form-label">Loại xe</label>
+                <select id="vehicle_type" name="vehicle_type" class="form-control" required>
+                    <option value="car" {% if vehicle.vehicle_type == 'car' %}selected{% endif %}>Ô tô (Car)</option>
+                    <option value="bike" {% if vehicle.vehicle_type == 'bike' %}selected{% endif %}>Xe máy / Xe khác (Bike)</option>
+                </select>
+            </div>
+            
+            <div class="form-group">
+                <label for="owner_name" class="form-label">Tên chủ xe</label>
+                <input type="text" id="owner_name" name="owner_name" class="form-control" value="{{ vehicle.owner_name or '' }}">
+            </div>
+            
+            <div class="form-group">
+                <label for="phone" class="form-label">Số điện thoại</label>
+                <input type="text" id="phone" name="phone" class="form-control" value="{{ vehicle.phone or '' }}">
+            </div>
+            
+            <div style="display: flex; gap: 12px; margin-top: 24px; justify-content: flex-end;">
+                <a href="{{ url_for('vehicles') }}" class="btn btn-secondary">Hủy bỏ</a>
+                <button type="submit" class="btn btn-primary">
+                    <i class="fa-solid fa-floppy-disk"></i> Lưu thay đổi
+                </button>
+            </div>
+        </form>
+    </div>
+</div>
+{% endblock %}

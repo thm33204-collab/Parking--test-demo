@@ -1,0 +1,256 @@
+{% extends "base.html" %}
+
+{% block title %}Bảng điều khiển Admin - Smart Parking{% endblock %}
+
+{% block extra_css %}
+.admin-header-title {
+    font-size: 24px;
+    font-weight: 700;
+    color: #0f172a;
+    margin-bottom: 24px;
+}
+
+.admin-grid {
+    display: grid;
+    grid-template-columns: 1fr;
+    gap: 24px;
+}
+
+.status-badge {
+    display: inline-flex;
+    align-items: center;
+    padding: 6px 12px;
+    font-size: 12px;
+    font-weight: 600;
+    border-radius: 6px;
+    gap: 6px;
+}
+
+.badge-parking {
+    background-color: #fee2e2;
+    color: #ef4444;
+}
+
+.badge-completed {
+    background-color: #d1fae5;
+    color: #10b981;
+}
+
+.badge-booked {
+    background-color: #eff6ff;
+    color: #3b82f6;
+}
+
+.booking-search-form {
+    display: flex;
+    gap: 12px;
+    align-items: center;
+    flex-wrap: wrap;
+}
+
+.empty-state {
+    padding: 30px;
+    text-align: center;
+    color: var(--text-muted);
+    font-style: italic;
+    background-color: #fafafa;
+    border-radius: 8px;
+    border: 1px dashed var(--border-color);
+}
+
+.dashboard-action-bar {
+    display: flex;
+    gap: 12px;
+    margin-bottom: 24px;
+    flex-wrap: wrap;
+}
+{% endblock %}
+
+{% block content %}
+<div class="admin-header-title">Bảng điều khiển Quản trị viên (Admin)</div>
+
+<!-- Admin Quick Action Links -->
+<div class="dashboard-action-bar">
+    <a href="{{ url_for('slots_init') }}" class="btn btn-secondary">
+        <i class="fa-solid fa-wrench"></i> Khởi tạo nhanh 20 Slots (A01-A20)
+    </a>
+    <a href="{{ url_for('vehicle_in') }}" class="btn btn-primary">
+        <i class="fa-solid fa-right-to-bracket"></i> Cho xe vào bãi
+    </a>
+    <a href="{{ url_for('vehicle_out') }}" class="btn btn-secondary">
+        <i class="fa-solid fa-right-from-bracket"></i> Cho xe ra bãi
+    </a>
+</div>
+
+<div class="admin-grid">
+    <!-- Section 1: Bookings by Date -->
+    <div class="card">
+        <div class="card-header">
+            <h2 class="card-title"><i class="fa-regular fa-calendar-days" style="margin-right: 8px;"></i> Tra cứu danh sách Đặt chỗ trước theo ngày</h2>
+        </div>
+        
+        <form method="POST" action="/admin_dashboard" class="booking-search-form">
+            <div class="form-group" style="margin-bottom: 0;">
+                <input type="date" name="date" id="admin_date" class="form-control" style="width: 200px;" required value="{{ request.form.get('date', '') }}">
+            </div>
+            <button type="submit" id="btn_view_bookings" class="btn btn-primary">
+                <i class="fa-solid fa-magnifying-glass"></i> Xem lịch đặt chỗ
+            </button>
+        </form>
+
+        <div style="margin-top: 20px;">
+            {% if bookings %}
+            <div class="table-responsive">
+                <table class="table-custom">
+                    <thead>
+                        <tr>
+                            <th>Mã đặt</th>
+                            <th>Người đặt</th>
+                            <th>Vị trí (Slot)</th>
+                            <th>Ngày đặt</th>
+                            <th>Giờ vào</th>
+                            <th>Giờ ra</th>
+                            <th>Biển số xe</th>
+                            <th>Số điện thoại</th>
+                            <th>Trạng thái</th>
+                        </tr>
+                    </thead>
+                    <tbody>
+                        {% for booking in bookings %}
+                        <tr>
+                            <td>#{{ booking.id }}</td>
+                            <td style="font-weight: 500;">{{ booking.name }}</td>
+                            <td><span style="font-weight: 600;">Slot A{{ "%02d"|format(booking.slot_id) }}</span></td>
+                            <td>{{ booking.date }}</td>
+                            <td>{{ booking.in_time }}</td>
+                            <td>{{ booking.out_time }}</td>
+                            <td style="font-weight: 600;">{{ booking.vehicle_number }}</td>
+                            <td>{{ booking.mobile_number }}</td>
+                            <td>
+                                <span class="status-badge badge-booked">
+                                    <i class="fa-solid fa-circle-check"></i> {{ booking.status }}
+                                </span>
+                            </td>
+                        </tr>
+                        {% endfor %}
+                    </tbody>
+                </table>
+            </div>
+            {% else %}
+                {% if request.method == 'POST' %}
+                    <div class="empty-state">Không tìm thấy lịch đặt chỗ nào cho ngày đã chọn.</div>
+                {% endif %}
+            {% endif %}
+        </div>
+    </div>
+
+    <!-- Section 2: Vehicles Currently Parking -->
+    <div class="card">
+        <div class="card-header">
+            <h2 class="card-title"><i class="fa-solid fa-square-parking" style="margin-right: 8px;"></i> Danh sách xe đang gửi trong bãi</h2>
+            <span style="font-size: 13px; font-weight: 600; color: #ef4444; background: #fee2e2; padding: 4px 10px; border-radius: 20px;">
+                {{ parking_now | length }} xe trong bãi
+            </span>
+        </div>
+        
+        {% if parking_now %}
+        <div class="table-responsive">
+            <table class="table-custom">
+                <thead>
+                    <tr>
+                        <th>Mã lượt gửi</th>
+                        <th>Biển số xe</th>
+                        <th>Loại xe</th>
+                        <th>Vị trí đỗ</th>
+                        <th>Thời điểm vào</th>
+                        <th>Trạng thái</th>
+                        <th>Hành động</th>
+                    </tr>
+                </thead>
+                <tbody>
+                    {% for r in parking_now %}
+                    <tr>
+                        <td>#{{ r.id }}</td>
+                        <td style="font-weight: 700; font-size: 15px;">{{ r.plate_number }}</td>
+                        <td>
+                            {% if r.vehicle_type == 'car' %}
+                                <i class="fa-solid fa-car" style="color: #3b82f6; margin-right: 6px;"></i> Ô tô
+                            {% else %}
+                                <i class="fa-solid fa-motorcycle" style="color: #10b981; margin-right: 6px;"></i> Xe máy
+                            {% endif %}
+                        </td>
+                        <td><span style="font-weight: 600;">Slot A{{ "%02d"|format(r.slot_id) }}</span></td>
+                        <td>{{ r.in_time }}</td>
+                        <td>
+                            <span class="status-badge badge-parking">
+                                <i class="fa-solid fa-spinner fa-spin"></i> Đang đỗ
+                            </span>
+                        </td>
+                        <td>
+                            <a href="{{ url_for('vehicle_out', plate_number=r.plate_number) }}" class="btn btn-danger" style="padding: 6px 12px; font-size: 12px;">
+                                <i class="fa-solid fa-right-from-bracket"></i> Cho xe ra
+                            </a>
+                        </td>
+                    </tr>
+                    {% endfor %}
+                </tbody>
+            </table>
+        </div>
+        {% else %}
+            <div class="empty-state">Hiện tại không có xe nào đang đỗ trong bãi.</div>
+        {% endif %}
+    </div>
+
+    <!-- Section 3: Recently Completed -->
+    <div class="card">
+        <div class="card-header">
+            <h2 class="card-title"><i class="fa-solid fa-clock-rotate-left" style="margin-right: 8px;"></i> Các lượt gửi xe hoàn thành gần đây</h2>
+        </div>
+        
+        {% if completed_recent %}
+        <div class="table-responsive">
+            <table class="table-custom">
+                <thead>
+                    <tr>
+                        <th>Mã lượt gửi</th>
+                        <th>Biển số xe</th>
+                        <th>Loại xe</th>
+                        <th>Vị trí đỗ</th>
+                        <th>Thời điểm vào</th>
+                        <th>Thời điểm ra</th>
+                        <th>Phí gửi xe (VNĐ)</th>
+                        <th>Trạng thái</th>
+                    </tr>
+                </thead>
+                <tbody>
+                    {% for r in completed_recent %}
+                    <tr>
+                        <td>#{{ r.id }}</td>
+                        <td style="font-weight: 700; font-size: 15px;">{{ r.plate_number }}</td>
+                        <td>
+                            {% if r.vehicle_type == 'car' %}
+                                <i class="fa-solid fa-car" style="color: #3b82f6; margin-right: 6px;"></i> Ô tô
+                            {% else %}
+                                <i class="fa-solid fa-motorcycle" style="color: #10b981; margin-right: 6px;"></i> Xe máy
+                            {% endif %}
+                        </td>
+                        <td><span>Slot A{{ "%02d"|format(r.slot_id) }}</span></td>
+                        <td>{{ r.in_time }}</td>
+                        <td>{{ r.out_time }}</td>
+                        <td style="font-weight: 600; color: #a855f7;">{{ "{:,}".format(r.fee) }}</td>
+                        <td>
+                            <span class="status-badge badge-completed">
+                                <i class="fa-solid fa-circle-check"></i> Đã ra
+                            </span>
+                        </td>
+                    </tr>
+                    {% endfor %}
+                </tbody>
+            </table>
+        </div>
+        {% else %}
+            <div class="empty-state">Chưa ghi nhận lượt xe ra nào.</div>
+        {% endif %}
+    </div>
+</div>
+{% endblock %}

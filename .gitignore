@@ -1,0 +1,30 @@
+# Môi trường ảo Python
+venv/
+env/
+ENV/
+.venv/
+
+# Byte-code / cache
+__pycache__/
+*.py[cod]
+*$py.class
+*.so
+
+# Dữ liệu tạm thời và upload
+temp_uploads/*
+!temp_uploads/.gitkeep
+plates/*
+!plates/.gitkeep
+
+# Môi trường và cấu hình bảo mật
+.env
+*.local
+
+# Nhật ký hệ thống
+*.log
+
+# IDE và OS
+.vscode/
+.idea/
+.DS_Store
+Thumbs.db

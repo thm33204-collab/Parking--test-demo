@@ -1,0 +1,138 @@
+{% extends "base.html" %}
+
+{% block title %}Quản lý phương tiện - Smart Parking{% endblock %}
+
+{% block extra_css %}
+.page-header-actions {
+    display: flex;
+    justify-content: space-between;
+    align-items: center;
+    margin-bottom: 24px;
+    flex-wrap: wrap;
+    gap: 16px;
+}
+
+.page-title {
+    font-size: 24px;
+    font-weight: 700;
+    color: #0f172a;
+}
+
+.search-bar-container {
+    display: flex;
+    gap: 10px;
+    align-items: center;
+    background: #ffffff;
+    border-radius: 8px;
+    border: 1px solid var(--border-color);
+    padding: 4px 10px;
+    box-shadow: var(--card-shadow);
+    width: 320px;
+}
+
+.search-input {
+    border: none;
+    outline: none;
+    font-size: 14px;
+    width: 100%;
+    padding: 6px;
+    color: #0f172a;
+}
+
+.search-btn {
+    background: none;
+    border: none;
+    color: var(--text-muted);
+    cursor: pointer;
+    font-size: 16px;
+    padding: 6px;
+}
+
+.search-btn:hover {
+    color: var(--primary-color);
+}
+
+.vehicle-action-buttons {
+    display: flex;
+    gap: 6px;
+    justify-content: center;
+}
+{% endblock %}
+
+{% block content %}
+<div class="page-header-actions">
+    <h1 class="page-title">Danh sách phương tiện đăng ký</h1>
+    
+    <div style="display: flex; gap: 16px; align-items: center; flex-wrap: wrap;">
+        <!-- Search bar -->
+        <form method="GET" action="{{ url_for('vehicles') }}" style="margin: 0; display: flex;">
+            <div class="search-bar-container">
+                <input type="text" name="search" placeholder="Tìm biển số xe..." class="search-input" value="{{ search }}">
+                <button type="submit" class="search-btn">
+                    <i class="fa-solid fa-magnifying-glass"></i>
+                </button>
+            </div>
+        </form>
+
+        <a href="{{ url_for('vehicle_add') }}" class="btn btn-primary">
+            <i class="fa-solid fa-plus"></i> Thêm xe mới
+        </a>
+    </div>
+</div>
+
+<div class="card" style="padding: 0; border: none; background: transparent; box-shadow: none;">
+    {% if vehicles %}
+    <div class="table-responsive">
+        <table class="table-custom">
+            <thead>
+                <tr>
+                    <th>Mã ID</th>
+                    <th>Biển số xe</th>
+                    <th>Loại xe</th>
+                    <th>Tên chủ xe</th>
+                    <th>Số điện thoại</th>
+                    <th>Ngày đăng ký</th>
+                    <th style="text-align: center;">Hành động</th>
+                </tr>
+            </thead>
+            <tbody>
+                {% for vehicle in vehicles %}
+                <tr>
+                    <td>#{{ vehicle.id }}</td>
+                    <td style="font-weight: 700; font-size: 15px; color: #0f172a;">{{ vehicle.plate_number }}</td>
+                    <td>
+                        {% if vehicle.vehicle_type == 'car' %}
+                            <i class="fa-solid fa-car" style="color: #3b82f6; margin-right: 6px;"></i> Ô tô
+                        {% else %}
+                            <i class="fa-solid fa-motorcycle" style="color: #10b981; margin-right: 6px;"></i> Xe máy
+                        {% endif %}
+                    </td>
+                    <td style="font-weight: 500;">{{ vehicle.owner_name or 'N/A' }}</td>
+                    <td>{{ vehicle.phone or 'N/A' }}</td>
+                    <td>{{ vehicle.created_at }}</td>
+                    <td>
+                        <div class="vehicle-action-buttons">
+                            <a href="{{ url_for('vehicle_edit', id=vehicle.id) }}" class="btn btn-secondary" style="padding: 6px 12px; font-size: 12px;">
+                                <i class="fa-solid fa-pen-to-square"></i> Sửa
+                            </a>
+                            <a href="{{ url_for('vehicle_delete', id=vehicle.id) }}" class="btn btn-danger" style="padding: 6px 12px; font-size: 12px;" onclick="return confirm('Bạn có chắc chắn muốn xóa phương tiện này?');">
+                                <i class="fa-solid fa-trash"></i> Xóa
+                            </a>
+                        </div>
+                    </td>
+                </tr>
+                {% endfor %}
+            </tbody>
+        </table>
+    </div>
+    {% else %}
+    <div class="card" style="text-align: center; padding: 40px 20px; color: var(--text-muted);">
+        <i class="fa-solid fa-car-tunnel" style="font-size: 48px; color: #cbd5e1; margin-bottom: 16px;"></i>
+        <p style="font-size: 15px; font-weight: 500;">Không tìm thấy phương tiện nào.</p>
+        {% if search %}
+            <a href="{{ url_for('vehicles') }}" class="btn btn-secondary" style="margin-top: 14px;">Quay lại danh sách xe</a>
+        {% endif %}
+    </div>
+    {% endif %}
+</div>
+{% endblock %}

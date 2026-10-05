@@ -1,0 +1,702 @@
+<!DOCTYPE html>
+<html lang="vi">
+<head>
+    <meta charset="UTF-8">
+    <meta name="viewport" content="width=device-width, initial-scale=1.0">
+    <title>{% block title %}Smart Parking{% endblock %}</title>
+    <!-- Google Fonts -->
+    <link href="https://fonts.googleapis.com/css2?family=Inter:wght@300;400;500;600;700&display=swap" rel="stylesheet">
+    <!-- Font Awesome Icons -->
+    <link rel="stylesheet" href="https://cdnjs.cloudflare.com/ajax/libs/font-awesome/6.4.0/css/all.min.css">
+    <!-- Chart.js CDN -->
+    <script src="https://cdn.jsdelivr.net/npm/chart.js"></script>
+    <style>
+        :root {
+            --primary-color: #0f62fe;
+            --primary-light: #e5e9ff;
+            --bg-color: #f4f6f9;
+            --text-color: #161616;
+            --text-muted: #525252;
+            --sidebar-width: 260px;
+            --sidebar-collapsed-width: 70px;
+            --header-height: 70px;
+            --card-shadow: 0 4px 12px rgba(0, 0, 0, 0.05);
+            --border-color: #e0e0e0;
+        }
+
+        * {
+            box-sizing: border-box;
+            margin: 0;
+            padding: 0;
+        }
+
+        body {
+            font-family: 'Inter', sans-serif;
+            background-color: var(--bg-color);
+            color: var(--text-color);
+            min-height: 100vh;
+            display: flex;
+            overflow-x: hidden;
+        }
+
+        /* Sidebar Styling */
+        aside {
+            width: var(--sidebar-width);
+            background-color: #ffffff;
+            border-right: 1px solid var(--border-color);
+            height: 100vh;
+            position: fixed;
+            top: 0;
+            left: 0;
+            z-index: 1000;
+            display: flex;
+            flex-direction: column;
+            justify-content: space-between;
+            transition: width 0.3s cubic-bezier(0.4, 0, 0.2, 1);
+        }
+
+        .sidebar-brand {
+            height: var(--header-height);
+            display: flex;
+            align-items: center;
+            padding: 0 24px;
+            gap: 12px;
+            border-bottom: 1px solid var(--border-color);
+            overflow: hidden;
+        }
+
+        .logo-box {
+            width: 36px;
+            height: 36px;
+            background-color: var(--primary-color);
+            color: #ffffff;
+            border-radius: 8px;
+            display: flex;
+            align-items: center;
+            justify-content: center;
+            font-weight: 700;
+            font-size: 20px;
+            flex-shrink: 0;
+        }
+
+        .brand-text {
+            font-weight: 700;
+            font-size: 14px;
+            letter-spacing: 0.5px;
+            color: #0f172a;
+            white-space: nowrap;
+            line-height: 1.2;
+        }
+
+        .brand-text span {
+            display: block;
+            font-size: 11px;
+            font-weight: 500;
+            color: var(--text-muted);
+        }
+
+        .sidebar-menu {
+            list-style: none;
+            padding: 24px 12px;
+            flex-grow: 1;
+            overflow-y: auto;
+        }
+
+        .menu-item {
+            margin-bottom: 6px;
+        }
+
+        .menu-link {
+            display: flex;
+            align-items: center;
+            padding: 12px 16px;
+            color: #475569;
+            text-decoration: none;
+            border-radius: 8px;
+            font-weight: 500;
+            font-size: 14px;
+            gap: 14px;
+            transition: all 0.2s ease;
+            white-space: nowrap;
+        }
+
+        .menu-link i {
+            font-size: 18px;
+            width: 24px;
+            display: flex;
+            justify-content: center;
+            transition: transform 0.2s;
+        }
+
+        .menu-link:hover {
+            background-color: #f1f5f9;
+            color: #0f172a;
+        }
+
+        .menu-link:hover i {
+            transform: scale(1.15);
+        }
+
+        .menu-item.active .menu-link {
+            background-color: var(--primary-light);
+            color: var(--primary-color);
+        }
+
+        .sidebar-footer {
+            padding: 16px 12px;
+            border-top: 1px solid var(--border-color);
+            overflow: hidden;
+        }
+
+        .toggle-collapse-btn {
+            display: flex;
+            align-items: center;
+            width: 100%;
+            padding: 10px 16px;
+            background: none;
+            border: none;
+            color: var(--text-muted);
+            font-weight: 500;
+            font-size: 13px;
+            cursor: pointer;
+            gap: 14px;
+            border-radius: 8px;
+            transition: all 0.2s ease;
+            white-space: nowrap;
+        }
+
+        .toggle-collapse-btn:hover {
+            background-color: #f1f5f9;
+            color: #0f172a;
+        }
+
+        /* Collapsed Sidebar State */
+        body.collapsed-sidebar aside {
+            width: var(--sidebar-collapsed-width);
+        }
+
+        body.collapsed-sidebar .brand-text,
+        body.collapsed-sidebar .menu-text,
+        body.collapsed-sidebar .toggle-collapse-btn span {
+            display: none;
+        }
+
+        body.collapsed-sidebar .menu-link,
+        body.collapsed-sidebar .toggle-collapse-btn {
+            justify-content: center;
+            padding: 12px;
+        }
+
+        body.collapsed-sidebar .menu-link i,
+        body.collapsed-sidebar .toggle-collapse-btn i {
+            margin: 0;
+            width: auto;
+        }
+
+        body.collapsed-sidebar .toggle-collapse-btn i {
+            transform: rotate(180deg);
+        }
+
+        /* Main Area Layout */
+        .wrapper {
+            margin-left: var(--sidebar-width);
+            width: calc(100% - var(--sidebar-width));
+            display: flex;
+            flex-direction: column;
+            min-height: 100vh;
+            transition: margin-left 0.3s cubic-bezier(0.4, 0, 0.2, 1), width 0.3s cubic-bezier(0.4, 0, 0.2, 1);
+        }
+
+        body.collapsed-sidebar .wrapper {
+            margin-left: var(--sidebar-collapsed-width);
+            width: calc(100% - var(--sidebar-collapsed-width));
+        }
+
+        /* Header Styling */
+        header {
+            height: var(--header-height);
+            background-color: #ffffff;
+            border-bottom: 1px solid var(--border-color);
+            display: flex;
+            align-items: center;
+            justify-content: space-between;
+            padding: 0 32px;
+            position: sticky;
+            top: 0;
+            z-index: 900;
+        }
+
+        .header-left {
+            display: flex;
+            align-items: center;
+            gap: 16px;
+        }
+
+        .toggle-sidebar-btn {
+            background: none;
+            border: none;
+            font-size: 20px;
+            color: #475569;
+            cursor: pointer;
+            width: 40px;
+            height: 40px;
+            border-radius: 8px;
+            display: flex;
+            align-items: center;
+            justify-content: center;
+            transition: background-color 0.2s;
+        }
+
+        .toggle-sidebar-btn:hover {
+            background-color: #f1f5f9;
+        }
+
+        .header-right {
+            display: flex;
+            align-items: center;
+            gap: 24px;
+        }
+
+        .notification-btn {
+            background: none;
+            border: none;
+            font-size: 20px;
+            color: #475569;
+            cursor: pointer;
+            position: relative;
+            width: 40px;
+            height: 40px;
+            border-radius: 8px;
+            display: flex;
+            align-items: center;
+            justify-content: center;
+            transition: background-color 0.2s;
+        }
+
+        .notification-btn:hover {
+            background-color: #f1f5f9;
+        }
+
+        .notification-badge {
+            position: absolute;
+            top: 6px;
+            right: 6px;
+            width: 16px;
+            height: 16px;
+            background-color: #ef4444;
+            color: #ffffff;
+            font-size: 10px;
+            font-weight: 700;
+            border-radius: 50%;
+            display: flex;
+            align-items: center;
+            justify-content: center;
+            border: 2px solid #ffffff;
+        }
+
+        .user-profile {
+            display: flex;
+            align-items: center;
+            gap: 10px;
+            cursor: pointer;
+            padding: 6px 12px;
+            border-radius: 8px;
+            transition: background-color 0.2s;
+        }
+
+        .user-profile:hover {
+            background-color: #f1f5f9;
+        }
+
+        .avatar {
+            width: 32px;
+            height: 32px;
+            background-color: #e2e8f0;
+            color: #475569;
+            border-radius: 50%;
+            display: flex;
+            align-items: center;
+            justify-content: center;
+            font-weight: 600;
+            font-size: 14px;
+        }
+
+        .user-info {
+            font-size: 14px;
+            font-weight: 600;
+            color: #0f172a;
+        }
+
+        .user-info i {
+            margin-left: 6px;
+            font-size: 12px;
+            color: #64748b;
+        }
+
+        /* Main Content Styling */
+        main {
+            flex-grow: 1;
+            padding: 32px;
+            max-width: 1600px;
+            width: 100%;
+            margin: 0 auto;
+        }
+
+        /* Flash Message Alert */
+        .alerts {
+            margin-bottom: 24px;
+        }
+
+        .alert {
+            padding: 14px 20px;
+            border-radius: 8px;
+            font-size: 14px;
+            font-weight: 500;
+            margin-bottom: 12px;
+            display: flex;
+            align-items: center;
+            gap: 10px;
+            animation: slideDown 0.3s ease;
+        }
+
+        .alert-success {
+            background-color: #d1fae5;
+            color: #065f46;
+            border: 1px solid #a7f3d0;
+        }
+
+        .alert-danger {
+            background-color: #fee2e2;
+            color: #991b1b;
+            border: 1px solid #fca5a5;
+        }
+
+        @keyframes slideDown {
+            from { transform: translateY(-10px); opacity: 0; }
+            to { transform: translateY(0); opacity: 1; }
+        }
+
+        /* General styles for UI components in child pages */
+        .card {
+            background-color: #ffffff;
+            border-radius: 12px;
+            border: 1px solid var(--border-color);
+            box-shadow: var(--card-shadow);
+            padding: 24px;
+            margin-bottom: 24px;
+        }
+
+        .card-header {
+            display: flex;
+            align-items: center;
+            justify-content: space-between;
+            margin-bottom: 20px;
+            border-bottom: 1px solid #f1f5f9;
+            padding-bottom: 12px;
+        }
+
+        .card-title {
+            font-size: 16px;
+            font-weight: 600;
+            color: #0f172a;
+        }
+
+        .btn {
+            display: inline-flex;
+            align-items: center;
+            justify-content: center;
+            padding: 10px 18px;
+            font-size: 14px;
+            font-weight: 550;
+            border-radius: 8px;
+            border: 1px solid transparent;
+            cursor: pointer;
+            transition: all 0.2s ease;
+            gap: 8px;
+            text-decoration: none;
+            font-family: inherit;
+        }
+
+        .btn-primary {
+            background-color: var(--primary-color);
+            color: #ffffff;
+        }
+
+        .btn-primary:hover {
+            background-color: #0052d9;
+        }
+
+        .btn-secondary {
+            background-color: #ffffff;
+            border-color: #cbd5e1;
+            color: #334155;
+        }
+
+        .btn-secondary:hover {
+            background-color: #f8fafc;
+            border-color: #94a3b8;
+        }
+
+        .btn-danger {
+            background-color: #ef4444;
+            color: #ffffff;
+        }
+
+        .btn-danger:hover {
+            background-color: #dc2626;
+        }
+
+        /* Forms styling */
+        .form-group {
+            margin-bottom: 18px;
+            text-align: left;
+        }
+
+        .form-label {
+            display: block;
+            font-size: 13px;
+            font-weight: 600;
+            color: #475569;
+            margin-bottom: 6px;
+        }
+
+        .form-control {
+            width: 100%;
+            padding: 10px 14px;
+            border: 1px solid #cbd5e1;
+            border-radius: 8px;
+            font-size: 14px;
+            font-family: inherit;
+            color: #0f172a;
+            transition: border-color 0.2s, box-shadow 0.2s;
+        }
+
+        .form-control:focus {
+            outline: none;
+            border-color: var(--primary-color);
+            box-shadow: 0 0 0 3px rgba(15, 98, 254, 0.15);
+        }
+
+        /* Tables styling */
+        .table-responsive {
+            width: 100%;
+            overflow-x: auto;
+            border: 1px solid var(--border-color);
+            border-radius: 12px;
+            background-color: #ffffff;
+            box-shadow: var(--card-shadow);
+        }
+
+        .table-custom {
+            width: 100%;
+            border-collapse: collapse;
+            text-align: left;
+        }
+
+        .table-custom th, .table-custom td {
+            padding: 14px 20px;
+            font-size: 14px;
+            border-bottom: 1px solid #f1f5f9;
+        }
+
+        .table-custom th {
+            background-color: #f8fafc;
+            color: #475569;
+            font-weight: 600;
+            text-transform: uppercase;
+            font-size: 11px;
+            letter-spacing: 0.5px;
+        }
+
+        .table-custom tr:last-child td {
+            border-bottom: none;
+        }
+
+        .table-custom tr:hover td {
+            background-color: #f8fafc;
+        }
+
+        /* Extra CSS styles for child pages */
+        {% block extra_css %}{% endblock %}
+    </style>
+</head>
+<body>
+
+    <!-- Sidebar Menu -->
+    <aside id="app-sidebar">
+        <div>
+            <div class="sidebar-brand">
+                <div class="logo-box">P</div>
+                <div class="brand-text">
+                    PARKING
+                    <span>MANAGEMENT</span>
+                </div>
+            </div>
+            
+            <ul class="sidebar-menu">
+                {% set active_route = request.path %}
+                
+                <!-- Cả hai đều có trang Dashboard riêng -->
+                <li class="menu-item {% if active_route == '/admin_dashboard' or active_route == '/dashboard' %}active{% endif %}">
+                    <a href="{% if session.get('admin') %}{{ url_for('admin_dashboard') }}{% else %}{{ url_for('dashboard') }}{% endif %}" class="menu-link">
+                        <i class="fa-solid fa-shapes"></i>
+                        <span class="menu-text">Dashboard</span>
+                    </a>
+                </li>
+                
+                <!-- Cả hai đều có quyền xem sơ đồ vị trí đỗ xe -->
+                <li class="menu-item {% if active_route.startswith('/slots') %}active{% endif %}">
+                    <a href="{{ url_for('slots') }}" class="menu-link">
+                        <i class="fa-solid fa-square-parking"></i>
+                        <span class="menu-text">Slots</span>
+                    </a>
+                </li>
+                
+                {% if session.get('admin') %}
+                <!-- MENU DÀNH RIÊNG CHO ADMIN / BẢO VỆ -->
+                <li class="menu-item {% if active_route.startswith('/vehicles') %}active{% endif %}">
+                    <a href="{{ url_for('vehicles') }}" class="menu-link">
+                        <i class="fa-solid fa-car"></i>
+                        <span class="menu-text">Vehicles</span>
+                    </a>
+                </li>
+                
+                <li class="menu-item {% if active_route == '/vehicle_in' %}active{% endif %}">
+                    <a href="{{ url_for('vehicle_in') }}" class="menu-link">
+                        <i class="fa-solid fa-right-to-bracket"></i>
+                        <span class="menu-text">Vehicle In</span>
+                    </a>
+                </li>
+                
+                <li class="menu-item {% if active_route == '/vehicle_out' %}active{% endif %}">
+                    <a href="{{ url_for('vehicle_out') }}" class="menu-link">
+                        <i class="fa-solid fa-right-from-bracket"></i>
+                        <span class="menu-text">Vehicle Out</span>
+                    </a>
+                </li>
+                
+                <li class="menu-item {% if active_route == '/report' %}active{% endif %}">
+                    <a href="{{ url_for('report') }}" class="menu-link">
+                        <i class="fa-solid fa-chart-simple"></i>
+                        <span class="menu-text">Report</span>
+                    </a>
+                </li>
+
+                <li class="menu-item {% if active_route == '/plate_recognition_demo' %}active{% endif %}">
+                    <a href="{{ url_for('plate_recognition_demo') }}" class="menu-link">
+                        <i class="fa-solid fa-camera"></i>
+                        <span class="menu-text">Plate OCR Demo</span>
+                    </a>
+                </li>
+                {% else %}
+                <!-- MENU DÀNH RIÊNG CHO USER THƯỜNG (KHÁCH HÀNG) -->
+                <li class="menu-item {% if active_route == '/book_slot' %}active{% endif %}">
+                    <a href="{{ url_for('book_slot') }}" class="menu-link">
+                        <i class="fa-regular fa-calendar-check"></i>
+                        <span class="menu-text">Book Slot</span>
+                    </a>
+                </li>
+                <li class="menu-item {% if active_route == '/cancel_slot' %}active{% endif %}">
+                    <a href="{{ url_for('cancel_slot') }}" class="menu-link">
+                        <i class="fa-solid fa-calendar-xmark"></i>
+                        <span class="menu-text">Cancel Slot</span>
+                    </a>
+                </li>
+                <li class="menu-item {% if active_route == '/history' %}active{% endif %}">
+                    <a href="{{ url_for('history') }}" class="menu-link">
+                        <i class="fa-solid fa-history"></i>
+                        <span class="menu-text">My Booking History</span>
+                    </a>
+                </li>
+                {% endif %}
+            </ul>
+        </div>
+        
+        <div class="sidebar-footer">
+            <button class="toggle-collapse-btn" id="sidebar-collapse-btn">
+                <i class="fa-solid fa-chevron-left"></i>
+                <span>Thu gọn</span>
+            </button>
+        </div>
+    </aside>
+
+    <!-- Main Wrapper -->
+    <div class="wrapper">
+        <!-- Header -->
+        <header>
+            <div class="header-left">
+                <button class="toggle-sidebar-btn" id="sidebar-hamburger-btn">
+                    <i class="fa-solid fa-bars"></i>
+                </button>
+            </div>
+            
+            <div class="header-right">
+                <!-- Notifications -->
+                <button class="notification-btn">
+                    <i class="fa-regular fa-bell"></i>
+                    <span class="notification-badge">3</span>
+                </button>
+                
+                <!-- Profile dropdown -->
+                <div class="user-profile">
+                    <div class="avatar">
+                        {% if session.get('admin') %}A{% else %}{{ session.get('name', 'U')[0] | upper }}{% endif %}
+                    </div>
+                    <div class="user-info">
+                        {% if session.get('admin') %}admin{% else %}{{ session.get('name', 'User') }}{% endif %}
+                        <i class="fa-solid fa-chevron-down"></i>
+                    </div>
+                </div>
+
+                <a href="{{ url_for('logout') }}" class="btn btn-secondary" style="padding: 6px 12px; font-size: 13px;">
+                    <i class="fa-solid fa-arrow-right-from-bracket"></i> Đăng xuất
+                </a>
+            </div>
+        </header>
+
+        <!-- Dynamic Content -->
+        <main>
+            <!-- Flash Message System -->
+            {% with messages = get_flashed_messages() %}
+                {% if messages %}
+                    <div class="alerts">
+                        {% for message in messages %}
+                            <div class="alert {% if 'success' in message or 'successfully' in message %}alert-success{% else %}alert-danger{% endif %}">
+                                <i class="fa-solid {% if 'success' in message or 'successfully' in message %}fa-circle-check{% else %}fa-circle-exclamation{% endif %}"></i>
+                                {{ message }}
+                            </div>
+                        {% endfor %}
+                    </div>
+                {% endif %}
+            {% endwith %}
+
+            {% block content %}{% endblock %}
+        </main>
+    </div>
+
+    <!-- Scripts to toggle sidebar collapse -->
+    <script>
+        document.addEventListener('DOMContentLoaded', function() {
+            const body = document.body;
+            const collapseBtn = document.getElementById('sidebar-collapse-btn');
+            const hamburgerBtn = document.getElementById('sidebar-hamburger-btn');
+            
+            // Read saved sidebar state from localStorage
+            const sidebarState = localStorage.getItem('sidebar-collapsed');
+            if (sidebarState === 'true') {
+                body.classList.add('collapsed-sidebar');
+            }
+            
+            function toggleSidebar() {
+                body.classList.toggle('collapsed-sidebar');
+                localStorage.setItem('sidebar-collapsed', body.classList.contains('collapsed-sidebar'));
+            }
+            
+            if (collapseBtn) collapseBtn.addEventListener('click', toggleSidebar);
+            if (hamburgerBtn) hamburgerBtn.addEventListener('click', toggleSidebar);
+        });
+    </script>
+    
+    {% block extra_js %}{% endblock %}
+</body>
+</html>

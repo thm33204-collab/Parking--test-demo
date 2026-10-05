@@ -1,0 +1,24 @@
+[Unit]
+Description=Smart Parking Flask Application Service
+After=network.target
+
+[Service]
+# Người dùng chạy service (mặc định trên EC2 Ubuntu là ubuntu)
+User=ubuntu
+Group=ubuntu
+
+# Thay đổi đường dẫn WorkingDirectory theo vị trí thực tế của thư mục dự án trên EC2
+WorkingDirectory=/home/ubuntu/parking_test_demo
+
+# Đường dẫn môi trường ảo và lệnh chạy Gunicorn
+Environment="PATH=/home/ubuntu/parking_test_demo/venv/bin"
+Environment="PORT=5000"
+Environment="SECRET_KEY=smart_parking_secret_key_prod_2026"
+ExecStart=/home/ubuntu/parking_test_demo/venv/bin/gunicorn --workers 2 --bind 0.0.0.0:5000 --timeout 120 wsgi:app
+
+# Tự động khởi động lại nếu dịch vụ bị crash
+Restart=always
+RestartSec=5
+
+[Install]
+WantedBy=multi-user.target

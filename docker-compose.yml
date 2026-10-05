@@ -1,0 +1,21 @@
+version: '3.8'
+
+services:
+  smart-parking:
+    build: .
+    container_name: smart_parking_app
+    restart: always
+    ports:
+      # Ánh xạ cổng 5000 từ container ra ngoài máy chủ EC2
+      - "5000:5000"
+      # Nếu muốn truy cập thẳng qua cổng 80 (HTTP chuẩn, không cần gõ :5000), bỏ comment dòng dưới:
+      # - "80:5000"
+    environment:
+      - PORT=5000
+      - SECRET_KEY=smart_parking_secret_key_prod_2026
+      - FLASK_DEBUG=False
+    volumes:
+      # Giữ nguyên dữ liệu database SQLite và ảnh khi container khởi động lại
+      - ./slot_booking.db:/app/slot_booking.db
+      - ./temp_uploads:/app/temp_uploads
+      - ./plates:/app/plates

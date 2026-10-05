@@ -1,0 +1,106 @@
+{% extends "base.html" %}
+
+{% block title %}Lịch sử đỗ xe - Smart Parking{% endblock %}
+
+{% block extra_css %}
+.page-title {
+    font-size: 24px;
+    font-weight: 700;
+    color: #0f172a;
+    margin-bottom: 24px;
+}
+
+.status-badge {
+    display: inline-flex;
+    align-items: center;
+    padding: 6px 12px;
+    font-size: 12px;
+    font-weight: 600;
+    border-radius: 6px;
+    gap: 6px;
+}
+
+.badge-parking {
+    background-color: #fee2e2;
+    color: #ef4444;
+}
+
+.badge-completed {
+    background-color: #d1fae5;
+    color: #10b981;
+}
+{% endblock %}
+
+{% block content %}
+<h1 class="page-title">Lịch sử phương tiện Ra / Vào bãi</h1>
+
+<div class="card" style="padding: 0; border: none; background: transparent; box-shadow: none;">
+    {% if records %}
+    <div class="table-responsive">
+        <table class="table-custom">
+            <thead>
+                <tr>
+                    <th>Mã số</th>
+                    <th>Biển số xe</th>
+                    <th>Loại xe</th>
+                    <th>Vị trí đỗ (Slot)</th>
+                    <th>Thời điểm vào</th>
+                    <th>Thời điểm ra</th>
+                    <th>Phí gửi (VNĐ)</th>
+                    <th>Trạng thái</th>
+                </tr>
+            </thead>
+            <tbody>
+                {% for r in records %}
+                <tr>
+                    <td>#{{ r.id }}</td>
+                    <td style="font-weight: 700; font-size: 15px; color: #0f172a;">{{ r.plate_number }}</td>
+                    <td>
+                        {% if r.vehicle_type == 'car' %}
+                            <i class="fa-solid fa-car" style="color: #3b82f6; margin-right: 6px;"></i> Ô tô
+                        {% else %}
+                            <i class="fa-solid fa-motorcycle" style="color: #10b981; margin-right: 6px;"></i> Xe máy
+                        {% endif %}
+                    </td>
+                    <td>
+                        <span style="font-weight: 600;">
+                            {% if r.slot_code %}
+                                {{ r.slot_code }}
+                            {% else %}
+                                Slot A{{ "%02d"|format(r.slot_id) }}
+                            {% endif %}
+                        </span>
+                    </td>
+                    <td>{{ r.in_time }}</td>
+                    <td>{{ r.out_time or '---' }}</td>
+                    <td style="font-weight: 600; color: #a855f7;">
+                        {% if r.status == 'completed' %}
+                            {{ "{:,}".format(r.fee) }}
+                        {% else %}
+                            Chờ thanh toán
+                        {% endif %}
+                    </td>
+                    <td>
+                        {% if r.status == 'parking' %}
+                            <span class="status-badge badge-parking">
+                                <i class="fa-solid fa-spinner fa-spin"></i> Đang gửi
+                            </span>
+                        {% else %}
+                            <span class="status-badge badge-completed">
+                                <i class="fa-solid fa-circle-check"></i> Đã ra
+                            </span>
+                        {% endif %}
+                    </td>
+                </tr>
+                {% endfor %}
+            </tbody>
+        </table>
+    </div>
+    {% else %}
+    <div class="card" style="text-align: center; padding: 40px 20px; color: var(--text-muted);">
+        <i class="fa-solid fa-folder-open" style="font-size: 48px; color: #cbd5e1; margin-bottom: 16px;"></i>
+        <p style="font-size: 15px; font-weight: 500;">Chưa ghi nhận lịch sử đỗ xe nào.</p>
+    </div>
+    {% endif %}
+</div>
+{% endblock %}

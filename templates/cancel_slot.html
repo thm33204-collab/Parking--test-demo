@@ -1,0 +1,71 @@
+{% extends "base.html" %}
+
+{% block title %}Hủy vị trí đỗ đã đặt - Smart Parking{% endblock %}
+
+{% block extra_css %}
+.page-title {
+    font-size: 24px;
+    font-weight: 700;
+    color: #0f172a;
+    margin-bottom: 24px;
+}
+.empty-state {
+    padding: 40px 20px;
+    text-align: center;
+    color: var(--text-muted);
+    background-color: #ffffff;
+    border-radius: 12px;
+    border: 1px solid var(--border-color);
+    box-shadow: var(--card-shadow);
+}
+{% endblock %}
+
+{% block content %}
+<h1 class="page-title">Hủy lịch đặt chỗ đỗ xe</h1>
+
+{% if active_bookings %}
+<div class="card" style="padding: 0; border: none; background: transparent; box-shadow: none;">
+    <div class="table-responsive">
+        <table class="table-custom">
+            <thead>
+                <tr>
+                    <th>Mã đặt chỗ</th>
+                    <th>Vị trí đỗ (Slot)</th>
+                    <th>Ngày đỗ</th>
+                    <th>Giờ vào</th>
+                    <th>Giờ ra</th>
+                    <th style="text-align: center;">Hành động</th>
+                </tr>
+            </thead>
+            <tbody>
+                {% for booking in active_bookings %}
+                <tr>
+                    <td>#{{ booking.id }}</td>
+                    <td><span style="font-weight: 600;">Slot A{{ "%02d"|format(booking.slot_id) }}</span></td>
+                    <td>{{ booking.date }}</td>
+                    <td>{{ booking.in_time }}</td>
+                    <td>{{ booking.out_time }}</td>
+                    <td>
+                        <div style="display: flex; justify-content: center;">
+                            <form method="POST" action="{{ url_for('cancel_slot') }}" style="margin:0;" onsubmit="return confirm('Bạn có chắc chắn muốn hủy đặt chỗ này?');">
+                                <input type="hidden" name="booking_id" value="{{ booking.id }}">
+                                <button type="submit" class="btn btn-danger" style="padding: 6px 12px; font-size: 12px;">
+                                    <i class="fa-solid fa-calendar-xmark"></i> Hủy đặt chỗ
+                                </button>
+                            </form>
+                        </div>
+                    </td>
+                </tr>
+                {% endfor %}
+            </tbody>
+        </table>
+    </div>
+</div>
+{% else %}
+<div class="empty-state">
+    <i class="fa-solid fa-calendar-check" style="font-size: 48px; color: #cbd5e1; margin-bottom: 16px;"></i>
+    <p style="font-size: 15px; font-weight: 500;">Bạn không có lịch đặt chỗ nào đang hoạt động trong hôm nay và tương lai.</p>
+    <a href="{{ url_for('book_slot') }}" class="btn btn-primary" style="margin-top: 14px;">Đặt chỗ mới ngay</a>
+</div>
+{% endif %}
+{% endblock %}

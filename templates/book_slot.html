@@ -1,0 +1,75 @@
+{% extends "base.html" %}
+
+{% block title %}Đặt trước vị trí đỗ xe - Smart Parking{% endblock %}
+
+{% block extra_css %}
+.form-container {
+    max-width: 600px;
+    margin: 0 auto;
+}
+{% endblock %}
+
+{% block content %}
+<div class="form-container">
+    <div class="card">
+        <div class="card-header">
+            <h1 class="card-title"><i class="fa-regular fa-calendar-check" style="margin-right: 8px; color: var(--primary-color);"></i> Đặt trước vị trí đỗ xe (Slot Booking)</h1>
+        </div>
+        
+        <form method="POST" action="{{ url_for('book_slot') }}">
+            <!-- Chọn Slot -->
+            <div class="form-group">
+                <label for="slot_id" class="form-label">Chọn Vị trí đỗ (Slot)</label>
+                <select id="slot_id" name="slot_id" class="form-control" required>
+                    <option value="" disabled selected>-- Chọn Vị trí đỗ xe --</option>
+                    {% for i in range(1, 21) %}
+                        <option value="{{ i }}" {% if i in booked_slots %}style="color:#ef4444;"{% endif %}>
+                            Slot A{{ "%02d"|format(i) }} {% if i in booked_slots %}(Đã được đặt trước){% else %}(Trống){% endif %}
+                        </option>
+                    {% endfor %}
+                </select>
+            </div>
+            
+            <!-- Ngày đặt -->
+            <div class="form-group">
+                <label for="date" class="form-label">Chọn Ngày nhận chỗ</label>
+                <input type="date" id="date" name="date" class="form-control" required min="{{ datetime }}">
+            </div>
+            
+            <div style="display: grid; grid-template-columns: 1fr 1fr; gap: 16px;">
+                <!-- Giờ vào -->
+                <div class="form-group">
+                    <label for="in_time" class="form-label">Giờ vào dự kiến</label>
+                    <input type="time" id="in_time" name="in_time" class="form-control" required>
+                </div>
+                
+                <!-- Giờ ra -->
+                <div class="form-group">
+                    <label for="out_time" class="form-label">Giờ ra dự kiến</label>
+                    <input type="time" id="out_time" name="out_time" class="form-control" required>
+                </div>
+            </div>
+            
+            <!-- Biển số xe -->
+            <div class="form-group">
+                <label for="vehicle_number" class="form-label">Biển số xe gửi</label>
+                <input type="text" id="vehicle_number" name="vehicle_number" class="form-control" placeholder="Ví dụ: 20A-123.45" required>
+            </div>
+            
+            <!-- Số điện thoại -->
+            <div class="form-group">
+                <label for="mobile_number" class="form-label">Số điện thoại liên hệ</label>
+                <input type="tel" id="mobile_number" name="mobile_number" class="form-control" placeholder="Nhập số điện thoại" required>
+            </div>
+            
+            <!-- Thao tác -->
+            <div style="display: flex; gap: 12px; margin-top: 28px; justify-content: flex-end;">
+                <a href="{{ url_for('dashboard') }}" class="btn btn-secondary">Quay lại Dashboard</a>
+                <button type="submit" class="btn btn-primary">
+                    <i class="fa-solid fa-calendar-check"></i> Xác nhận Đặt chỗ
+                </button>
+            </div>
+        </form>
+    </div>
+</div>
+{% endblock %}

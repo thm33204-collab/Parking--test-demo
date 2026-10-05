@@ -1,0 +1,631 @@
+{% extends "base.html" %}
+
+{% block title %}Ghi nhận xe vào bãi - Smart Parking{% endblock %}
+
+{% block extra_css %}
+/* Styles matching the mockup exactly */
+.mockup-container {
+    max-width: 950px;
+    margin: 10px auto 30px auto;
+    background: #ffffff;
+    border-radius: 16px;
+    box-shadow: 0 10px 30px rgba(0,0,0,0.05);
+    border: 1px solid #e2e8f0;
+    overflow: hidden;
+}
+
+.mockup-header {
+    background: #ffffff;
+    padding: 20px 24px;
+    border-bottom: 1px solid #f1f5f9;
+    display: flex;
+    align-items: center;
+}
+
+.mockup-badge {
+    background: #0f62fe;
+    color: #ffffff;
+    padding: 8px 18px;
+    border-radius: 30px;
+    font-weight: 700;
+    font-size: 14px;
+    display: inline-flex;
+    align-items: center;
+    gap: 8px;
+}
+
+.mockup-body {
+    display: grid;
+    grid-template-columns: 1fr 1.1fr;
+    gap: 24px;
+    padding: 24px;
+}
+
+@media (max-width: 768px) {
+    .mockup-body {
+        grid-template-columns: 1fr;
+    }
+}
+
+/* Left panel camera & slot suggestion */
+.left-section {
+    display: flex;
+    flex-direction: column;
+    gap: 20px;
+}
+
+.camera-card {
+    border: 2px dashed #cbd5e1;
+    border-radius: 12px;
+    background: #fafbfc;
+    padding: 20px;
+    text-align: center;
+    position: relative;
+    display: flex;
+    flex-direction: column;
+    align-items: center;
+    justify-content: center;
+    min-height: 240px;
+    cursor: pointer;
+    overflow: hidden;
+    transition: all 0.2s ease;
+}
+
+.camera-card:hover {
+    border-color: #0f62fe;
+    background: #f1f5f9;
+}
+
+.camera-preview-img {
+    max-width: 100%;
+    max-height: 200px;
+    border-radius: 8px;
+    object-fit: cover;
+    box-shadow: 0 4px 10px rgba(0,0,0,0.08);
+}
+
+.camera-placeholder {
+    color: #94a3b8;
+    display: flex;
+    flex-direction: column;
+    align-items: center;
+    gap: 12px;
+}
+
+.camera-placeholder i {
+    font-size: 54px;
+    color: #94a3b8;
+}
+
+.camera-placeholder span {
+    font-size: 13px;
+    font-weight: 500;
+    color: #64748b;
+}
+
+.camera-btn-overlay {
+    position: absolute;
+    top: 12px;
+    right: 12px;
+    width: 36px;
+    height: 36px;
+    border-radius: 50%;
+    background: #ffffff;
+    border: 1px solid #e2e8f0;
+    display: flex;
+    align-items: center;
+    justify-content: center;
+    color: #475569;
+    box-shadow: 0 2px 5px rgba(0,0,0,0.05);
+    z-index: 10;
+}
+
+.suggested-slot-card {
+    border: 1px solid #e2e8f0;
+    border-radius: 12px;
+    padding: 16px 20px;
+    background: #ffffff;
+}
+
+.suggested-slot-title {
+    font-size: 14px;
+    font-weight: 700;
+    color: #334155;
+    margin-bottom: 12px;
+    display: flex;
+    align-items: center;
+    gap: 8px;
+}
+
+.suggested-slot-layout {
+    display: flex;
+    gap: 20px;
+    align-items: center;
+}
+
+.suggested-p-icon {
+    width: 56px;
+    height: 56px;
+    border-radius: 12px;
+    border: 2px dashed #0f62fe;
+    background: #eff6ff;
+    display: flex;
+    align-items: center;
+    justify-content: center;
+    color: #0f62fe;
+    font-size: 26px;
+    font-weight: 800;
+    flex-shrink: 0;
+}
+
+.suggested-details {
+    flex-grow: 1;
+    display: grid;
+    grid-template-columns: 1fr 1fr;
+    gap: 8px 16px;
+    font-size: 13px;
+}
+
+.suggested-detail-item {
+    display: flex;
+    justify-content: space-between;
+    align-items: center;
+    border-bottom: 1px dashed #f1f5f9;
+    padding-bottom: 4px;
+}
+
+.suggested-detail-label {
+    color: #64748b;
+    font-weight: 500;
+}
+
+.suggested-detail-value {
+    color: #0f172a;
+    font-weight: 600;
+}
+
+.slot-badge-blue {
+    background: #0f62fe;
+    color: #ffffff;
+    padding: 2px 8px;
+    border-radius: 4px;
+    font-size: 12px;
+    font-weight: 700;
+}
+
+/* Right panel form styling */
+.right-section {
+    display: flex;
+    flex-direction: column;
+    gap: 20px;
+}
+
+.input-with-icon-wrapper {
+    position: relative;
+}
+
+.input-with-icon-wrapper i {
+    position: absolute;
+    left: 14px;
+    top: 50%;
+    transform: translateY(-50%);
+    color: #94a3b8;
+}
+
+.input-with-icon-wrapper input, 
+.input-with-icon-wrapper select {
+    padding-left: 42px;
+}
+
+.info-card {
+    border: 1px solid #e2e8f0;
+    border-radius: 12px;
+    background: #ffffff;
+    padding: 16px 20px;
+}
+
+.info-card-title {
+    font-size: 14px;
+    font-weight: 700;
+    color: #334155;
+    margin-bottom: 12px;
+    border-bottom: 1px solid #f1f5f9;
+    padding-bottom: 8px;
+}
+
+.info-row {
+    display: flex;
+    justify-content: space-between;
+    align-items: center;
+    padding: 8px 0;
+    border-bottom: 1px solid #f8fafc;
+    font-size: 13px;
+}
+
+.info-row:last-child {
+    border-bottom: none;
+}
+
+.info-label {
+    color: #64748b;
+    font-weight: 500;
+    display: flex;
+    align-items: center;
+    gap: 8px;
+}
+
+.info-value {
+    color: #1e293b;
+    font-weight: 600;
+}
+
+.badge-success-green {
+    background: #d1fae5;
+    color: #065f46;
+    padding: 4px 10px;
+    border-radius: 20px;
+    font-size: 11px;
+    font-weight: 600;
+    display: inline-flex;
+    align-items: center;
+    gap: 4px;
+}
+
+.badge-warning-yellow {
+    background: #fef3c7;
+    color: #92400e;
+    padding: 4px 10px;
+    border-radius: 20px;
+    font-size: 11px;
+    font-weight: 600;
+    display: inline-flex;
+    align-items: center;
+    gap: 4px;
+}
+
+.btn-blue-confirm {
+    width: 100%;
+    background: #0f62fe;
+    color: #ffffff;
+    border: none;
+    border-radius: 10px;
+    padding: 14px;
+    font-size: 15px;
+    font-weight: 700;
+    cursor: pointer;
+    display: flex;
+    align-items: center;
+    justify-content: center;
+    gap: 8px;
+    box-shadow: 0 4px 12px rgba(15, 98, 254, 0.15);
+    transition: all 0.2s ease;
+    margin-top: 10px;
+}
+
+.btn-blue-confirm:hover {
+    background: #0052d9;
+    transform: translateY(-1px);
+    box-shadow: 0 6px 16px rgba(15, 98, 254, 0.25);
+}
+
+.btn-blue-confirm:disabled {
+    background: #cbd5e1;
+    color: #94a3b8;
+    box-shadow: none;
+    cursor: not-allowed;
+    transform: none;
+}
+
+/* Spinner */
+.ocr-spinner {
+    display: inline-block;
+    width: 12px;
+    height: 12px;
+    border: 2px solid rgba(15, 98, 254, 0.25);
+    border-radius: 50%;
+    border-top-color: #0f62fe;
+    animation: spin 0.8s linear infinite;
+}
+
+@keyframes spin {
+    to { transform: rotate(360deg); }
+}
+{% endblock %}
+
+{% block content %}
+<div class="mockup-container">
+    <!-- Header with custom badge -->
+    <div class="mockup-header">
+        <div class="mockup-badge">
+            <i class="fa-solid fa-car"></i> Giao diện Xe vào
+        </div>
+    </div>
+    
+    <!-- Main Form -->
+    <form id="vehicle-in-form" method="POST" action="{{ url_for('vehicle_in') }}">
+        <div class="mockup-body">
+            
+            <!-- Left panel: Camera & Suggestion -->
+            <div class="left-section">
+                <!-- Camera view area -->
+                <div class="camera-card" id="camera-dropzone" onclick="document.getElementById('camera-file-input').click();">
+                    <div class="camera-btn-overlay">
+                        <i class="fa-solid fa-camera"></i>
+                    </div>
+                    
+                    <input type="file" id="camera-file-input" style="display: none;" accept="image/*">
+                    
+                    <div class="camera-placeholder" id="camera-placeholder">
+                        <i class="fa-solid fa-camera-retro"></i>
+                        <span>Click hoặc kéo thả ảnh camera vào đây để quét biển số</span>
+                    </div>
+                    <img id="camera-preview" class="camera-preview-img" style="display: none;" alt="Camera preview">
+                </div>
+                
+                <!-- Chỗ đỗ đề xuất -->
+                <div class="suggested-slot-card">
+                    <div class="suggested-slot-title">
+                        <i class="fa-solid fa-circle-info" style="color: #0f62fe;"></i> Chỗ đỗ đề xuất
+                    </div>
+                    <div class="suggested-slot-layout">
+                        <div class="suggested-p-icon" id="suggested-p-label">
+                            P
+                        </div>
+                        <div class="suggested-details">
+                            <div class="suggested-detail-item">
+                                <span class="suggested-detail-label">Vị trí đề xuất</span>
+                                <span class="suggested-detail-value" id="suggested-slot-val">--</span>
+                            </div>
+                            <div class="suggested-detail-item">
+                                <span class="suggested-detail-label">Tầng</span>
+                                <span class="suggested-detail-value" id="suggested-floor-val">--</span>
+                            </div>
+                            <div class="suggested-detail-item">
+                                <span class="suggested-detail-label">Khu vực</span>
+                                <span class="suggested-detail-value" id="suggested-zone-val">--</span>
+                            </div>
+                            <div class="suggested-detail-item">
+                                <span class="suggested-detail-label">Khoảng cách</span>
+                                <span class="suggested-detail-value" id="suggested-dist-val">--</span>
+                            </div>
+                        </div>
+                    </div>
+                </div>
+            </div>
+            
+            <!-- Right panel: Inputs & Status -->
+            <div class="right-section">
+                <!-- Biển số xe input -->
+                <div class="form-group">
+                    <label for="plate_number" class="form-label">Biển số xe</label>
+                    <div class="input-with-icon-wrapper">
+                        <i class="fa-solid fa-credit-card"></i>
+                        <input type="text" id="plate_number" name="plate_number" class="form-control" placeholder="Nhập biển số xe (Ví dụ: 30A-12345)" required value="{{ plate_number }}">
+                    </div>
+                </div>
+                
+                <!-- Loại xe select -->
+                <div class="form-group">
+                    <label for="vehicle_type" class="form-label">Loại xe</label>
+                    <div class="input-with-icon-wrapper">
+                        <i class="fa-solid fa-truck-pickup"></i>
+                        <select id="vehicle_type" name="vehicle_type" class="form-control" required>
+                            <option value="car">Ô tô (Car)</option>
+                            <option value="bike">Xe máy / Xe khác (Bike)</option>
+                        </select>
+                    </div>
+                </div>
+                
+                <!-- Chọn Vị trí đỗ (Slot) -->
+                <div class="form-group">
+                    <label for="slot_id" class="form-label">Chọn Vị trí đỗ (Slot)</label>
+                    <div class="input-with-icon-wrapper">
+                        <i class="fa-solid fa-square-parking"></i>
+                        <select id="slot_id" name="slot_id" class="form-control" required>
+                            <option value="" disabled selected>-- Chọn vị trí còn trống --</option>
+                            {% for slot in available_slots %}
+                                <option value="{{ slot.id }}" data-code="{{ slot.slot_code }}" {% if request.args.get('slot_id')|int == slot.id %}selected{% endif %}>
+                                    {{ slot.slot_code }} (Trống)
+                                </option>
+                            {% endfor %}
+                        </select>
+                    </div>
+                    {% if not available_slots %}
+                        <span style="color: #ef4444; font-size: 12px; font-weight: 500; margin-top: 6px; display: block;">
+                            Cảnh báo: Bãi đỗ đã hết chỗ trống!
+                        </span>
+                    {% endif %}
+                </div>
+                
+                <!-- Thông tin vào -->
+                <div class="info-card">
+                    <div class="info-card-title">Thông tin vào</div>
+                    
+                    <div class="info-row">
+                        <span class="info-label"><i class="fa-regular fa-clock"></i> Thời gian vào</span>
+                        <span class="info-value" id="current-time-display">--</span>
+                    </div>
+                    
+                    <div class="info-row">
+                        <span class="info-label"><i class="fa-solid fa-shield-halved"></i> Trạng thái nhận diện</span>
+                        <span class="info-value" id="ocr-status-badge">
+                            <span class="badge-warning-yellow">Chờ quét ảnh...</span>
+                        </span>
+                    </div>
+                    
+                    <div class="info-row">
+                        <span class="info-label"><i class="fa-regular fa-user"></i> Nhân viên xử lý</span>
+                        <span class="info-value">Admin</span>
+                    </div>
+                    
+                    <div class="info-row" style="border-bottom: none; padding-bottom: 0;">
+                        <span class="info-label" style="align-self: flex-start; padding-top: 6px;"><i class="fa-regular fa-comment-dots"></i> Ghi chú</span>
+                        <input type="text" name="note" class="form-control" placeholder="Nhập ghi chú (nếu có)" style="max-width: 60%; height: 32px; font-size: 12px;">
+                    </div>
+                </div>
+                
+                <!-- Confirm button -->
+                <div class="action-btn-container">
+                    <button type="submit" class="btn-blue-confirm" {% if not available_slots %}disabled{% endif %}>
+                        <i class="fa-solid fa-right-to-bracket"></i> Xác nhận xe vào
+                    </button>
+                </div>
+            </div>
+            
+        </div>
+    </form>
+</div>
+{% endblock %}
+
+{% block extra_js %}
+<script>
+    document.addEventListener('DOMContentLoaded', function() {
+        // 1. Live Clock updating
+        function updateTime() {
+            const timeDisplay = document.getElementById('current-time-display');
+            if (timeDisplay) {
+                const now = new Date();
+                const day = String(now.getDate()).padStart(2, '0');
+                const month = String(now.getMonth() + 1).padStart(2, '0');
+                const year = now.getFullYear();
+                const hours = String(now.getHours()).padStart(2, '0');
+                const minutes = String(now.getMinutes()).padStart(2, '0');
+                const seconds = String(now.getSeconds()).padStart(2, '0');
+                timeDisplay.textContent = `${day}/${month}/${year} ${hours}:${minutes}:${seconds}`;
+            }
+        }
+        updateTime();
+        setInterval(updateTime, 1000);
+
+        // 2. Select Suggestion handler
+        const slotSelect = document.getElementById('slot_id');
+        function updateSuggestedSlotDetails() {
+            const selectedOpt = slotSelect.options[slotSelect.selectedIndex];
+            const suggestedSlotVal = document.getElementById('suggested-slot-val');
+            const floorVal = document.getElementById('suggested-floor-val');
+            const zoneVal = document.getElementById('suggested-zone-val');
+            const distVal = document.getElementById('suggested-dist-val');
+            const suggestedP = document.getElementById('suggested-p-label');
+
+            if (selectedOpt && !selectedOpt.disabled) {
+                const code = selectedOpt.getAttribute('data-code') || selectedOpt.textContent.trim().split(' ')[0];
+                const id = parseInt(selectedOpt.value);
+                
+                suggestedSlotVal.textContent = code;
+                
+                // Floor and Area Logic based on id
+                const floor = id <= 10 ? 1 : 2;
+                const zone = (id <= 5 || (id > 10 && id <= 15)) ? 'Khu A' : 'Khu B';
+                const dist = id * 5; // Statically simulated distance
+
+                floorVal.textContent = `Tầng ${floor}`;
+                zoneVal.textContent = zone;
+                distVal.textContent = `${dist} m`;
+                suggestedP.textContent = code;
+            } else {
+                suggestedSlotVal.textContent = '--';
+                floorVal.textContent = '--';
+                zoneVal.textContent = '--';
+                distVal.textContent = '--';
+                suggestedP.textContent = 'P';
+            }
+        }
+
+        // Auto select first slot option if none selected, and populate suggestions
+        if (slotSelect.selectedIndex <= 0 && slotSelect.options.length > 1) {
+            // Find first enabled option
+            for (let i = 0; i < slotSelect.options.length; i++) {
+                if (!slotSelect.options[i].disabled) {
+                    slotSelect.selectedIndex = i;
+                    break;
+                }
+            }
+        }
+        updateSuggestedSlotDetails();
+
+        slotSelect.addEventListener('change', updateSuggestedSlotDetails);
+
+        // 3. Camera Upload and OCR handler
+        const fileInput = document.getElementById('camera-file-input');
+        const previewImg = document.getElementById('camera-preview');
+        const placeholder = document.getElementById('camera-placeholder');
+        const statusBadge = document.getElementById('ocr-status-badge');
+        const plateInput = document.getElementById('plate-number');
+
+        // Drag & drop handlers
+        const dropzone = document.getElementById('camera-dropzone');
+        
+        ['dragenter', 'dragover'].forEach(eventName => {
+            dropzone.addEventListener(eventName, (e) => {
+                e.preventDefault();
+                e.stopPropagation();
+                dropzone.style.borderColor = '#0f62fe';
+                dropzone.style.background = '#f1f5f9';
+            }, false);
+        });
+
+        ['dragleave', 'drop'].forEach(eventName => {
+            dropzone.addEventListener(eventName, (e) => {
+                e.preventDefault();
+                e.stopPropagation();
+                dropzone.style.borderColor = '#cbd5e1';
+                dropzone.style.background = '#fafbfc';
+            }, false);
+        });
+
+        dropzone.addEventListener('drop', (e) => {
+            const dt = e.dataTransfer;
+            const files = dt.files;
+            if (files && files.length > 0) {
+                fileInput.files = files;
+                handleFile(files[0]);
+            }
+        });
+
+        fileInput.addEventListener('change', function(e) {
+            if (this.files && this.files[0]) {
+                handleFile(this.files[0]);
+            }
+        });
+
+        function handleFile(file) {
+            // Display Image preview
+            const reader = new FileReader();
+            reader.onload = function(e) {
+                previewImg.src = e.target.result;
+                previewImg.style.display = 'block';
+                placeholder.style.display = 'none';
+            }
+            reader.readAsDataURL(file);
+
+            // Set loading status
+            statusBadge.innerHTML = '<span class="badge-warning-yellow"><span class="ocr-spinner"></span> Đang nhận diện AI...</span>';
+
+            // Send to OCR API
+            const formData = new FormData();
+            formData.append('image', file);
+
+            fetch('/api/ocr', {
+                method: 'POST',
+                body: formData
+            })
+            .then(res => res.json())
+            .then(data => {
+                if (data.success && data.plate_number) {
+                    plateInput.value = data.plate_number;
+                    statusBadge.innerHTML = '<span class="badge-success-green"><i class="fa-solid fa-circle-check"></i> Nhận diện thành công</span>';
+                    
+                    // Display a temporary visual notify
+                    console.log('Detected via: ' + data.method);
+                } else {
+                    statusBadge.innerHTML = '<span class="badge-warning-yellow"><i class="fa-solid fa-triangle-exclamation"></i> Nhận diện thất bại (Nhập tay)</span>';
+                }
+            })
+            .catch(err => {
+                console.error(err);
+                statusBadge.innerHTML = '<span class="badge-warning-yellow"><i class="fa-solid fa-circle-exclamation"></i> Lỗi hệ thống (Nhập tay)</span>';
+            });
+        }
+    });
+</script>
+{% endblock %}

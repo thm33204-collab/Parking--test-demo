@@ -1,0 +1,85 @@
+{% extends "base.html" %}
+
+{% block title %}Lịch sử đặt chỗ của tôi - Smart Parking{% endblock %}
+
+{% block extra_css %}
+.page-title {
+    font-size: 24px;
+    font-weight: 700;
+    color: #0f172a;
+    margin-bottom: 24px;
+}
+
+.status-badge {
+    display: inline-flex;
+    align-items: center;
+    padding: 6px 12px;
+    font-size: 12px;
+    font-weight: 600;
+    border-radius: 6px;
+    gap: 6px;
+}
+
+.badge-booked {
+    background-color: #eff6ff;
+    color: #3b82f6;
+}
+
+.badge-expired {
+    background-color: #f1f5f9;
+    color: #64748b;
+}
+{% endblock %}
+
+{% block content %}
+<h1 class="page-title">Lịch sử đặt chỗ của tôi</h1>
+
+<div class="card" style="padding: 0; border: none; background: transparent; box-shadow: none;">
+    {% if bookings %}
+    <div class="table-responsive">
+        <table class="table-custom">
+            <thead>
+                <tr>
+                    <th>Mã đặt chỗ</th>
+                    <th>Biển số xe</th>
+                    <th>Vị trí đỗ (Slot)</th>
+                    <th>Ngày đỗ</th>
+                    <th>Giờ vào</th>
+                    <th>Giờ ra</th>
+                    <th>Trạng thái</th>
+                </tr>
+            </thead>
+            <tbody>
+                {% for booking in bookings %}
+                <tr>
+                    <td>#{{ booking.id }}</td>
+                    <td style="font-weight: 700; font-size: 15px; color: #0f172a;">{{ booking.vehicle_number }}</td>
+                    <td><span style="font-weight: 600;">Slot A{{ "%02d"|format(booking.slot_id) }}</span></td>
+                    <td>{{ booking.date }}</td>
+                    <td>{{ booking.in_time }}</td>
+                    <td>{{ booking.out_time }}</td>
+                    <td>
+                        {% if booking.status == 'booked' %}
+                            <span class="status-badge badge-booked">
+                                <i class="fa-solid fa-circle-check"></i> Đang hiệu lực
+                            </span>
+                        {% else %}
+                            <span class="status-badge badge-expired">
+                                <i class="fa-solid fa-clock"></i> {{ booking.status }}
+                            </span>
+                        {% endif %}
+                    </td>
+                </tr>
+                {% endfor %}
+            </tbody>
+        </table>
+    </div>
+    {% else %}
+    <div class="card" style="text-align: center; padding: 40px 20px; color: var(--text-muted);">
+        <i class="fa-solid fa-calendar-times" style="font-size: 48px; color: #cbd5e1; margin-bottom: 16px;"></i>
+        <p style="font-size: 15px; font-weight: 500;">Bạn chưa thực hiện bất kỳ lượt đặt chỗ nào từ trước đến nay.</p>
+        <a href="{{ url_for('book_slot') }}" class="btn btn-primary" style="margin-top: 14px;">Đặt chỗ đỗ xe ngay</a>
+    </div>
+    {% endif %}
+</div>
+{% endblock %}
